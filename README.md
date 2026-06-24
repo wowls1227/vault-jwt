@@ -313,4 +313,3 @@ vault lease lookup $LEASE_ID | grep expire_time
 ```bash
 vault list sys/leases/lookup/keycloak-jwt/token/myrole/
 ```
-# vault-jwt

@@ -200,15 +200,68 @@ plugin_directory = "/etc/vault/plugins"
 
 ## Keycloak 사전 설정
 
-### vault-client (토큰 발급용)
+### 1. 로컬 Docker로 Keycloak 실행
 
-- **Client authentication**: ON
-- **Direct access grants**: ON
+```bash
+docker run -d \
+  --name keycloak \
+  -p 8080:8080 \
+  -e KEYCLOAK_ADMIN=admin \
+  -e KEYCLOAK_ADMIN_PASSWORD=admin \
+  quay.io/keycloak/keycloak:latest \
+  start-dev
+```
 
-### vault-admin (Admin API용)
+브라우저에서 `http://localhost:8080` 접속 후 `admin` / `admin` 로그인.
 
-- **Client authentication**: ON
-- **Service accounts roles** → `realm-management` → `manage-users` 역할 추가
+> docker-compose를 사용하는 경우:
+> ```yaml
+> services:
+>   keycloak:
+>     image: quay.io/keycloak/keycloak:latest
+>     command: start-dev
+>     ports:
+>       - "8080:8080"
+>     environment:
+>       KEYCLOAK_ADMIN: admin
+>       KEYCLOAK_ADMIN_PASSWORD: admin
+> ```
+
+---
+
+### 2. Realm 생성
+
+**Admin Console** → 좌측 상단 드롭다운 → **Create realm**
+- `Realm name`: `myrealm` (원하는 이름)
+- **Create** 클릭
+
+---
+
+### 3. vault-client 생성 (토큰 발급용)
+
+**Clients** → **Create client**
+- `Client ID`: `vault-client`
+- **Next** → `Client authentication`: ON
+- `Authentication flow` → **Direct access grants** 체크
+- **Save**
+
+**Credentials** 탭 → `Client secret` 복사
+
+---
+
+### 4. vault-admin 생성 (Admin API용)
+
+**Clients** → **Create client**
+- `Client ID`: `vault-admin`
+- **Next** → `Client authentication`: ON
+- `Authentication flow` → **Service accounts roles** 체크
+- **Save**
+
+**Service accounts roles** 탭 → **Assign role**
+- `Filter by clients` 선택 → `realm-management` 검색
+- `manage-users` 역할 체크 → **Assign**
+
+**Credentials** 탭 → `Client secret` 복사
 
 ---
 
